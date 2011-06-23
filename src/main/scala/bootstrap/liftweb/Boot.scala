@@ -10,6 +10,8 @@ import Helpers._
 import _root_.net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, StandardDBVendor}
 import _root_.java.sql.{Connection, DriverManager}
 import _root_.com.yorrick.tasks.model._
+import com.yorrick.tasks.view.TasksView
+import com.yorrick.tasks.snippet._
 
 
 /**
@@ -33,15 +35,51 @@ class Boot {
     // where to search snippet
     LiftRules.addToPackages("com.yorrick.tasks")
     Schemifier.schemify(true, Schemifier.infoF _, User)
+    
+    LiftRules.statelessRewrite.append({
+      case RewriteRequest(ParsePath(List("account", accountName), _, _, _), _, _) =>
+         RewriteResponse("viewAcct" :: Nil, Map("accountName" -> accountName))
 
-    // Build SiteMap
-    def sitemap() = SiteMap(
-      Menu("Home") / "index" >> User.AddUserMenusAfter, // Simple menu form
-      // Menu with special Link
-      Menu(Loc("Static", Link(List("static"), true, "/static/index"), 
-	       "Static Content")))
+      case RewriteRequest(ParsePath(list @ List("tasks", "edition", _*), _, _, _), _, _) =>
+        RewriteResponse("tasks-management" :: "edit" :: Nil)
+        
+      case RewriteRequest(ParsePath(List("tasks", taskImportance), _, _, _), _, _) =>
+         RewriteResponse("tasks-management" :: "list" :: Nil, Map("taskImportance" -> taskImportance))
+    })
 
-    LiftRules.setSiteMapFunc(() => User.sitemapMutator(sitemap()))
+    // build sitemap
+    val entries = List(Menu("Home") / "index") :::
+    			  // tasks
+                  List(Menu(Loc("Tasks", Link(List("tasks-management"), true, "/tasks/"), "List of tasks"))) :::
+                  // the User management menu items
+                  User.sitemap :::
+                  Nil
+
+    LiftRules.uriNotFound.prepend(NamedPF("404handler"){
+      case (req,failure) => NotFoundAsTemplate(
+        ParsePath(List("exceptions","404"),"html",false,false))
+    })
+    
+    LiftRules.setSiteMap(SiteMap(entries:_*))
+    
+    // view dispatching
+    LiftRules.viewDispatch.append {
+      case "tasks-management" :: Nil => {println("vue des taches appelée"); Right(TasksView)}
+    }
+
+    // snippet dispatching
+    LiftRules.snippetDispatch.append {
+      case "TasksList"             => TasksListSnippet
+
+      case "TasksEdition"          => S.snippetForClass("TasksEditionSnippet") openOr {
+        println("creating new snippet for tasks")
+        val instance = new TasksEditionSnippet
+        instance.addName("TasksEditionSnippet")
+        S.overrideSnippetForClass("TasksEditionSnippet", instance)
+        instance
+      }
+
+    }
 
     /*
      * Show the spinny image when an Ajax call starts
