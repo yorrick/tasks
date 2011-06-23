@@ -9,7 +9,6 @@ import com.yorrick.tasks.snippet.requestvars.{currentTask, taskImportance}
 object TasksView extends LiftView {
 
   def dispatch = {
-    case "edit" => edit _
     case "list" => list _
   }
 
@@ -19,6 +18,9 @@ object TasksView extends LiftView {
   private def list : NodeSeq =
     <lift:surround with="default" at="content">
       <h2>Liste des taches à partir de {taskImportance.is}</h2>
+      <div class="lift:TasksList.createTask">
+        <h3><a>Ajouter une tâche</a></h3>
+      </div>
       <ul >
         <div class="lift:TasksList.viewTask">
           <li>
@@ -27,40 +29,11 @@ object TasksView extends LiftView {
             <img id="image"/>
             <p>
               <a id="editLink">Editer la tâche</a>
+              <a id="removeLink">Supprimer la tâche</a>
             </p>
-
           </li>
         </div>
       </ul>
      </lift:surround>
-
-
-
-  private def edit : NodeSeq = {
-    <lift:surround with="default" at="content">
-      <lift:TasksEdition.editTask form="POST" multipart="true">
-        <!--<h2>Edition de la tache</h2>
-        <h3 id="label">Label : </h3>
-        <h3 id="description">Description : </h3>
-        <h3>Importance : <br/><span id="importance">Groupe de boutons</span></h3>
-        <h3 id="image">Ajouter une image : </h3><br/>
-        <h3 id="saveButton"/>
-        <h3 id="previousButton"/>
-        <h3 id="nextButton"/>-->
-      </lift:TasksEdition.editTask>
-    </lift:surround>
-  }
-
-//  private def editTask(task : Task) =
-//    <lift:Tasks.editTask form="POST" multipart="true">
-//      <h2>Edition de la tache {task.id}</h2>
-//      <h3 id="label">Label : </h3>
-//      <h3 id="description">Description : </h3>
-//      <h3>Importance : <br/><span id="importance">Groupe de boutons</span></h3>
-//      <h3 id="image">Ajouter une image : </h3><br/>
-//      <h3 id="submitButton"/>
-//    </lift:Tasks.editTask>
-
-
 
 }

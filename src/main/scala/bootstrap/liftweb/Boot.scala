@@ -36,17 +36,25 @@ class Boot {
     LiftRules.addToPackages("com.yorrick.tasks")
     Schemifier.schemify(true, Schemifier.infoF _, User)
     
+    // url rewriting
     LiftRules.statelessRewrite.append({
       case RewriteRequest(ParsePath(List("account", accountName), _, _, _), _, _) =>
          RewriteResponse("viewAcct" :: Nil, Map("accountName" -> accountName))
 
+
       case RewriteRequest(ParsePath(list @ List("tasks", "edition", _*), _, _, _), _, _) =>
         RewriteResponse("tasks-management" :: "edit" :: Nil)
-        
+
       case RewriteRequest(ParsePath(List("tasks", taskImportance), _, _, _), _, _) =>
          RewriteResponse("tasks-management" :: "list" :: Nil, Map("taskImportance" -> taskImportance))
     })
 
+    // Custom dispatch for image generation
+    LiftRules.dispatch.append {
+      case Req(List("tasks", "image", taskId), _, _) =>
+        () => Image.viewImage(taskId)
+    }
+    
     // build sitemap
     val entries = List(Menu("Home") / "index") :::
     			  // tasks
@@ -64,7 +72,12 @@ class Boot {
     
     // view dispatching
     LiftRules.viewDispatch.append {
-      case "tasks-management" :: Nil => {println("vue des taches appelée"); Right(TasksView)}
+      case "tasks-management" :: "edit" :: Nil => Left(() => TemplateFinder.findAnyTemplate("templates-hidden/tasks/tasks" :: Nil) match {
+        case Full(content) => Full(content)
+        case _ => Empty
+      })
+      
+      case "tasks-management" :: Nil => Right(TasksView)
     }
 
     // snippet dispatching
@@ -93,7 +106,8 @@ class Boot {
     LiftRules.ajaxEnd =
       Full(() => LiftRules.jsArtifacts.hide("ajax-loader").cmd)
 
-    LiftRules.early.append(makeUtf8)
+    // set character encoding
+    LiftRules.early.append(_.setCharacterEncoding("UTF-8"))
 
     LiftRules.loggedInTest = Full(() => User.loggedIn_?)
 

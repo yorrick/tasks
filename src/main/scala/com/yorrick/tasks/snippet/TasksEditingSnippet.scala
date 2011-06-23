@@ -7,7 +7,7 @@ import net.liftweb.util.BindHelpers._
 import requestvars.currentTask
 import net.liftweb.http._
 import model.{Image, Task, TaskImportance}
-import xml.NodeSeq
+import xml.{NodeSeq, Attribute, Text, Null}
 import net.liftweb.common.{Empty, Full, Box}
 
 class TasksEditionSnippet extends StatefulSnippet {
@@ -123,9 +123,8 @@ class TasksEditionSnippet extends StatefulSnippet {
       "#label *+"       #> SHtml.text(taskToSave.label, taskToSave.label = _, "maxlength" -> "20", "cols" -> "20") &
       "#description *+" #> SHtml.textarea(taskToSave.desc, taskToSave.desc = _, "cols" -> "30", "rows" -> "8") &
       "#importance"     #> SHtml.selectObj(options, Full(taskToSave.importance), {imp : TaskImportance.Value => taskToSave.importance = imp}) &
-//      "#image"          #> SHtml.fileUpload({holder : FileParamHolder => fileHolder = Full(holder)}) &
-      "#saveButton"   #> SHtml.submit("Sauvegarder", saveFirstStageData _) &
-      "#nextButton"   #> SHtml.submit("Ajouter une image", goToSecondStage _)
+      "#saveButton"     #> SHtml.submit("Sauvegarder", saveFirstStageData _) &
+      "#nextButton"     #> SHtml.submit("Ajouter une image", goToSecondStage _)
     ).apply(content)
 
 
@@ -139,6 +138,14 @@ class TasksEditionSnippet extends StatefulSnippet {
           taskToSave.image = Some((mime, data))
         case _ => // nothing to do
       }
+    }
+
+    val imageTag = taskToSave match {
+      case TaskHolder(Some(id), _, _, _, Some((_, _))) =>
+        val imageSource = "/tasks/image/" + id
+        <img id="image" alt="Image de la task"/> % Attribute(None, "src", Text(imageSource), Null)
+      case _ =>
+        <span>Pas d'image pour cette tâche</span>
     }
 
     def saveFirstAndSecondStageData = {
@@ -156,9 +163,10 @@ class TasksEditionSnippet extends StatefulSnippet {
     val content = TemplateFinder.findAnyTemplate("templates-hidden/tasks/stage2" :: Nil) openOr <span>Could not load template</span>
 
     val result = (
-      "#image"        #> SHtml.fileUpload(handleFileUpload) &
-      "#previousButton"#> SHtml.submit("Précédent", previous _) &
-      "#saveButton"   #> SHtml.submit("Sauvegarder", saveFirstAndSecondStageData _)
+      "#imageViewing"   #> imageTag &
+      "#image"          #> SHtml.fileUpload(handleFileUpload) &
+      "#previousButton" #> SHtml.submit("Précédent", previous _) &
+      "#saveButton"     #> SHtml.submit("Sauvegarder", saveFirstAndSecondStageData _)
     ).apply(content)
 
     result

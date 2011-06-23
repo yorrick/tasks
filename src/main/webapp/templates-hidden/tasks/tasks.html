@@ -1,0 +1,24 @@
+<lift:surround with="default" at="content" xmlns:lift="http://liftweb.net/">
+<head>
+    <style type="text/css">
+
+/* <![CDATA[ */
+
+.buttons {
+  position: absolute;
+  bottom: 10px;
+  right : 0px;
+}
+
+.mainTaskDiv {
+  position: relative;
+  height : 500px;
+}
+  /* ]]> */
+
+  </style>
+</head>
+
+  <lift:TasksEdition.editTask form="POST" multipart="true" />
+
+</lift:surround>
