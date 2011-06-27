@@ -56,9 +56,12 @@ class Boot {
     }
     
     // build sitemap
+    val createTaskMenu = Menu(Loc("taskCreation", Link("tasks-management" :: "edit" :: Nil, false, "/tasks/edition"), "Ajouter une tache"))
+    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), "Taches"), createTaskMenu)
+    
     val entries = List(Menu("Home") / "index") :::
     			  // tasks
-                  List(Menu(Loc("Tasks", Link(List("tasks-management"), true, "/tasks/"), "List of tasks"))) :::
+                  List(listTasksMenu) :::
                   // the User management menu items
                   User.sitemap :::
                   Nil
