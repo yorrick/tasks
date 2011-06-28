@@ -55,9 +55,14 @@ class Boot {
         () => Image.viewImage(taskId)
     }
     
+    def test = User.currentUser match {
+      case Full(user) => "Taches de " + user.firstName
+      case _ => "Taches"
+    }
+    
     // build sitemap
     val createTaskMenu = Menu(Loc("taskCreation", Link("tasks-management" :: "edit" :: Nil, false, "/tasks/edition"), "Ajouter une tache"))
-    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), "Taches"), createTaskMenu)
+    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), test), createTaskMenu)
     
     val entries = List(Menu("Home") / "index") :::
     			  // tasks
