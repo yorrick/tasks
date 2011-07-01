@@ -12,11 +12,11 @@ object TasksListSnippet extends DispatchSnippet {
 
   def dispatch : DispatchIt = {
     case "viewTask" => viewTask _
-    case "createTask" => createTask _
+    //case "createTask" => createTask _
   }
 
-  private def createTask(content : NodeSeq) : NodeSeq =
-    ("h3" #> SHtml.link("/tasks/edition", () => (), content)).apply(content)
+  //private def createTask(content : NodeSeq) : NodeSeq =
+  //  ("h3" #> SHtml.link("/tasks/edition", () => (), content)).apply(content)
 
    private def viewTask(content : NodeSeq) : NodeSeq = {
     val result = Task.getTasks(taskImportance.is) match {

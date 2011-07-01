@@ -17,19 +17,20 @@ object TasksView extends LiftView {
    */
   private def list : NodeSeq =
     <lift:surround with="default" at="content">
-      <h2>Liste des taches à partir de {taskImportance.is}</h2>
-      <div class="lift:TasksList.createTask">
-        <h3><a>Ajouter une tâche</a></h3>
-      </div>
+
+      <h2>Liste des taches a partir de {taskImportance.is}</h2>
+    	<h3><span class="lift:Menu.item?name=taskCreation;a:class=taskCreationLink">
+    		Ajouter une tache 
+    	</span></h3>
       <ul >
         <div class="lift:TasksList.viewTask">
           <li>
-            <h3 id="label">Label de la tâche</h3>
+            <h3 id="label">Label de la tache</h3>
             <p class="description">Description : </p>
             <img id="image"/>
             <p>
-              <a id="editLink">Editer la tâche</a>
-              <a id="removeLink">Supprimer la tâche</a>
+              <a id="editLink">Editer la tache</a>
+              <a id="removeLink">Supprimer la tache</a>
             </p>
           </li>
         </div>
