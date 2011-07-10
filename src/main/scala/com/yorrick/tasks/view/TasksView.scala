@@ -19,9 +19,7 @@ object TasksView extends LiftView {
     <lift:surround with="default" at="content">
 
       <h2>Liste des taches a partir de {taskImportance.is}</h2>
-    	<h3><span class="lift:Menu.item?name=taskCreation;a:class=taskCreationLink">
-    		Ajouter une tache 
-    	</span></h3>
+    	<p class="lift:Menu.item?name=taskCreation;a:class=taskCreationLink">Ajouter une tache</p>
       <ul >
         <div class="lift:TasksList.viewTask">
           <li>
