@@ -12,6 +12,7 @@ import _root_.java.sql.{Connection, DriverManager}
 import _root_.com.yorrick.tasks.model._
 import com.yorrick.tasks.view.TasksView
 import com.yorrick.tasks.snippet._
+import scala.xml._
 
 
 /**
@@ -55,7 +56,7 @@ class Boot {
         () => Image.viewImage(taskId)
     }
     
-    def test = User.currentUser match {
+    def taskMenuTitle = User.currentUser match {
       case Full(user) => "Taches de " + user.firstName
       case _ => "Taches"
     }
@@ -63,14 +64,44 @@ class Boot {
     // build sitemap
     val ifLoggedIn = If(() => User.loggedIn_?, () => RedirectResponse("/user_mgt/login"))
     val createTaskMenu = Menu(Loc("taskCreation", Link("tasks-management" :: "edit" :: Nil, false, "/tasks/edition"), "Ajouter une tache", ifLoggedIn))
-    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), test, ifLoggedIn), createTaskMenu)
+    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), taskMenuTitle, ifLoggedIn), createTaskMenu)
+    
+    // test de surcharge de la vue en dŽfinissant directement un template
+    val testTemplate   = Template({ () =>
+      <lift:surround with="default" at="content">
+    	{
+    	  if (User.loggedIn_?) <p>User {User.currentUser.open_!.email} is logged in</p>
+    	  else <p>Please login</p>
+    	}
+      </lift:surround>
+    })
+    val testMenu 	   = Menu(Loc("test"	 , ("test" :: Nil) -> false, "test", Hidden, testTemplate))
+    
+    // surcharge de la snippet Home.display, pour ajouter un lien vers les taches si le user est loggedIn
+    val homeSnippet = Snippet("Home.display",
+    	if (User.loggedIn_?) {
+    	  {(content : NodeSeq) =>
+    	    <lift:children>
+    	  	  {HomeSnippet.display(content)}
+    	      <p class="lift:Menu.item?name=tasksList">Consult your tasks</p>
+    	  	</lift:children>
+    	  }
+    	} else {
+    	  HomeSnippet.display _
+    	}
+    )
+
+    def test : NodeSeq = <p>dfjovj</p>
     
     val entries = List(
-    				Menu("Home") / "index",
+    				//Menu("Home") / "index",
+    				Menu(Loc("home", ("index" :: Nil) -> false, "Home", homeSnippet)),
     				// about
     				Menu(Loc("static", List("static") -> true, "", Hidden)),
     				// tasks
-    				listTasksMenu
+    				listTasksMenu,
+    				// test menu
+    				testMenu
     			  ) :::
                   // the User management menu items
                   User.sitemap :::
@@ -107,6 +138,8 @@ class Boot {
         S.overrideSnippetForClass("TasksEditionSnippet", instance)
         instance
       }
+      
+      case "Home"           => HomeSnippet
 
     }
 

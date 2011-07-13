@@ -34,5 +34,5 @@ object TasksView extends LiftView {
         </div>
       </ul>
      </lift:surround>
-
+  
 }

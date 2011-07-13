@@ -12,12 +12,11 @@ class HelloWorld {
   lazy val date: Box[Date] = DependencyFactory.inject[Date] // inject the date
 
   // bind the date into the element with id "time"
-  /*def howdy = {
-    println("toto")
+  def howdy = {
     "#time *" #> (date.map(_.toString) + "toto")
-  }*/
+  }
 
-  def howdy = Text("polo")
+  //def howdy = Text("polo")
   
   /*
    lazy val date: Date = DependencyFactory.time.vend // create the date via factory
