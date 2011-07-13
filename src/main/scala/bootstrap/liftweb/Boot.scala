@@ -61,15 +61,23 @@ class Boot {
     }
     
     // build sitemap
-    val createTaskMenu = Menu(Loc("taskCreation", Link("tasks-management" :: "edit" :: Nil, false, "/tasks/edition"), "Ajouter une tache"))
-    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), test), createTaskMenu)
+    val ifLoggedIn = If(() => User.loggedIn_?, () => RedirectResponse("/user_mgt/login"))
+    val createTaskMenu = Menu(Loc("taskCreation", Link("tasks-management" :: "edit" :: Nil, false, "/tasks/edition"), "Ajouter une tache", ifLoggedIn))
+    val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), test, ifLoggedIn), createTaskMenu)
     
-    val entries = List(Menu("Home") / "index") :::
-    			  // tasks
-                  List(listTasksMenu) :::
+    val entries = List(
+    				Menu("Home") / "index",
+    				// about
+    				Menu(Loc("static", List("static") -> true, "", Hidden)),
+    				// tasks
+    				listTasksMenu
+    			  ) :::
                   // the User management menu items
                   User.sitemap :::
                   Nil
+                  
+    // dans quelles conditions ce parametre sert?
+    //LiftRules.siteMapFailRedirectLocation = "static" :: "about" :: Nil
 
     LiftRules.uriNotFound.prepend(NamedPF("404handler"){
       case (req,failure) => NotFoundAsTemplate(
