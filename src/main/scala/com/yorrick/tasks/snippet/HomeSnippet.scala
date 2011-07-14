@@ -1,6 +1,5 @@
 package com.yorrick.tasks.snippet
 
-import com.yorrick.tasks.model.Task
 import requestvars.{currentTask, taskImportance}
 import net.liftweb.http.{SHtml, DispatchSnippet}
 import xml.NodeSeq._

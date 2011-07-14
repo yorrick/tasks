@@ -22,26 +22,23 @@ import scala.xml._
 class Boot {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) {
-      val vendor = 
-	new StandardDBVendor(Props.get("db.driver") openOr "org.h2.Driver",
-			     Props.get("db.url") openOr 
-			     "jdbc:h2:lift_proto.db;AUTO_SERVER=TRUE",
+      val vendor = new StandardDBVendor(Props.get("db.driver") openOr "org.h2.Driver",
+			     Props.get("db.url") openOr "jdbc:h2:lift_proto.db;AUTO_SERVER=TRUE",
 			     Props.get("db.user"), Props.get("db.password"))
 
       LiftRules.unloadHooks.append(vendor.closeAllConnections_! _)
 
       DB.defineConnectionManager(DefaultConnectionIdentifier, vendor)
     }
-
+    
     // where to search snippet
     LiftRules.addToPackages("com.yorrick.tasks")
-    Schemifier.schemify(true, Schemifier.infoF _, User)
+    Schemifier.schemify(true, Schemifier.infoF _, User, Task2, Image2)
     
     // url rewriting
     LiftRules.statelessRewrite.append({
       case RewriteRequest(ParsePath(List("account", accountName), _, _, _), _, _) =>
          RewriteResponse("viewAcct" :: Nil, Map("accountName" -> accountName))
-
 
       case RewriteRequest(ParsePath(list @ List("tasks", "edition", _*), _, _, _), _, _) =>
         RewriteResponse("tasks-management" :: "edit" :: Nil)
@@ -53,7 +50,7 @@ class Boot {
     // Custom dispatch for image generation
     LiftRules.dispatch.append {
       case Req(List("tasks", "image", taskId), _, _) =>
-        () => Image.viewImage(taskId)
+        () => Image2.viewImage(taskId)
     }
     
     def taskMenuTitle = User.currentUser match {
@@ -66,17 +63,7 @@ class Boot {
     val createTaskMenu = Menu(Loc("taskCreation", Link("tasks-management" :: "edit" :: Nil, false, "/tasks/edition"), "Ajouter une tache", ifLoggedIn))
     val listTasksMenu  = Menu(Loc("tasksList",    Link("tasks-management" :: "list" :: Nil, true,  "/tasks/"), taskMenuTitle, ifLoggedIn), createTaskMenu)
     
-    // test de surcharge de la vue en dŽfinissant directement un template
-    val testTemplate   = Template({ () =>
-      <lift:surround with="default" at="content">
-    	{
-    	  if (User.loggedIn_?) <p>User {User.currentUser.open_!.email} is logged in</p>
-    	  else <p>Please login</p>
-    	}
-      </lift:surround>
-    })
-    val testMenu 	   = Menu(Loc("test"	 , ("test" :: Nil) -> false, "test", Hidden, testTemplate))
-    
+
     // surcharge de la snippet Home.display, pour ajouter un lien vers les taches si le user est loggedIn
     val homeSnippet = Snippet("Home.display",
     	if (User.loggedIn_?) {
@@ -99,9 +86,7 @@ class Boot {
     				// about
     				Menu(Loc("static", List("static") -> true, "", Hidden)),
     				// tasks
-    				listTasksMenu,
-    				// test menu
-    				testMenu
+    				listTasksMenu
     			  ) :::
                   // the User management menu items
                   User.sitemap :::
@@ -140,7 +125,6 @@ class Boot {
       }
       
       case "Home"           => HomeSnippet
-
     }
 
     /*

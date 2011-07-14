@@ -1,6 +1,6 @@
 package com.yorrick.tasks.snippet
 
-import com.yorrick.tasks.model.Task
+import com.yorrick.tasks.model.Task2
 import requestvars.{currentTask, taskImportance}
 import net.liftweb.http.{SHtml, DispatchSnippet}
 import xml.NodeSeq._
@@ -19,7 +19,7 @@ object TasksListSnippet extends DispatchSnippet {
   //  ("h3" #> SHtml.link("/tasks/edition", () => (), content)).apply(content)
 
    def viewTask(content : NodeSeq) : NodeSeq = {
-    val result = Task.getTasks(taskImportance.is) match {
+    val result : NodeSeq = Task2.getTasks(taskImportance.is) match {
       case Nil => <span>Pas de taches</span>
       case list => list.flatMap(task => {
           val redirectPath = "/tasks/edition/"
@@ -32,7 +32,8 @@ object TasksListSnippet extends DispatchSnippet {
               <span>Pas d'image pour cette tâche</span>
           }
 
-          def removeTask = Task.removeTask(task.id)
+          //def removeTask = Task2.removeTask(task.id)
+          def removeTask = task.delete_!
 
           (
             "#label *"        #> (task.label + "(" + task.id + ", " + task.importance.toString + ")") &

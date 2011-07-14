@@ -2,7 +2,6 @@ package com.yorrick.tasks.view
 
 import net.liftweb.http.LiftView
 import xml.NodeSeq
-import com.yorrick.tasks.model.Task
 import net.liftweb.common.{Failure, Empty, Full}
 import com.yorrick.tasks.snippet.requestvars.{currentTask, taskImportance}
 

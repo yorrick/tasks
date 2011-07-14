@@ -6,7 +6,7 @@ package snippet {
 import net.liftweb.util.BindHelpers._
 import requestvars.currentTask
 import net.liftweb.http._
-import model.{Image, Task, TaskImportance}
+import model.{Image2, Task2, TaskImportance}
 import xml.{NodeSeq, Attribute, Text, Null}
 import net.liftweb.common.{Empty, Full, Box}
 
@@ -17,7 +17,7 @@ class TasksEditionSnippet extends StatefulSnippet {
   }
 
   case class TaskHolder (
-    var id : Option[Int] = None,
+    var id : Option[Long] = None,
     var label : String   = "",
     var desc : String    = "",
     var importance : TaskImportance.Value = TaskImportance.Normal,
@@ -58,17 +58,23 @@ class TasksEditionSnippet extends StatefulSnippet {
   def saveTask() = {
     println("trying to save task " + taskToSave)
 
-    val taskId = taskToSave.id match {
-      case None => -1
-      case Some(id) => id
+    // sauvegarde de la tache
+    Task2.create.label(taskToSave.label).detail(taskToSave.desc).importance(taskToSave.importance).save
+    // sauvegarde de l'image
+    taskToSave.image match {
+      case Some((mime, data)) => Image2.create.data(data).mimeType(mime).save
+      case None => // rien a faire
     }
-
-    val image = taskToSave.image match {
-      case Some((mime, data)) => Some(new Image(data, mime))
-      case None => None
-    }
-
-    Task.saveTask(new Task(taskId, taskToSave.label, taskToSave.desc, taskToSave.importance, image))
+    
+//    val taskId = taskToSave.id match {
+//    case None => -1
+//    case Some(id) => id
+//    }
+//    val image = taskToSave.image match {
+//	    case Some((mime, data)) => Some(new Image2(data, mime))
+//	    case None => None
+//    }
+//    Task.saveTask(new Task(taskId, taskToSave.label, taskToSave.desc, taskToSave.importance, image))
 
     // on supprime le snippet de la session, et redirection
     unregisterThisSnippet()
@@ -84,15 +90,19 @@ class TasksEditionSnippet extends StatefulSnippet {
     currentTask.get match {
       case Full(taskFromList) =>
         // premier affichage du first stage, on va chercher les données de la current task
-        taskToSave.id         = Full(taskFromList.id)
-        taskToSave.label      = taskFromList.label
-        taskToSave.desc       = taskFromList.detail
-        taskToSave.importance = taskFromList.importance
+        taskToSave.id         = Full(taskFromList.id.is)
+        taskToSave.label      = taskFromList.label.is
+        taskToSave.desc       = taskFromList.detail.is
+        taskToSave.importance = taskFromList.importance.is
 
         taskFromList.image match {
-          case Some(Image(data, mime)) => taskToSave.image = Full(mime, data)
+          case Some(image) => taskToSave.image = Full(image.mimeType.is, image.data.is)
           case _ => // nothing to do
         }
+//        taskFromList.image match {
+//        case Some(Image2(data, mime)) => taskToSave.image = Full(mime, data)
+//        case _ => // nothing to do
+//        }
 
       case _ =>
         // rien à faire
@@ -119,7 +129,7 @@ class TasksEditionSnippet extends StatefulSnippet {
       (TaskImportance.Low,       "Faible"))
 
 
-    val result = (
+    val generatedXml = (
       "#label *+"       #> SHtml.text(taskToSave.label, taskToSave.label = _, "maxlength" -> "20", "cols" -> "20") &
       "#description *+" #> SHtml.textarea(taskToSave.desc, taskToSave.desc = _, "cols" -> "30", "rows" -> "8") &
       "#importance"     #> SHtml.selectObj(options, Full(taskToSave.importance), {imp : TaskImportance.Value => taskToSave.importance = imp}) &
@@ -127,8 +137,7 @@ class TasksEditionSnippet extends StatefulSnippet {
       "#nextButton"     #> SHtml.submit("Ajouter une image", goToSecondStage _)
     ).apply(content)
 
-
-    result
+    generatedXml
   }
 
   private def secondStage(c : NodeSeq) : NodeSeq = {
@@ -162,14 +171,14 @@ class TasksEditionSnippet extends StatefulSnippet {
 
     val content = TemplateFinder.findAnyTemplate("templates-hidden/tasks/stage2" :: Nil) openOr <span>Could not load template</span>
 
-    val result = (
+    val generatedXml = (
       "#imageViewing"   #> imageTag &
       "#image"          #> SHtml.fileUpload(handleFileUpload) &
       "#previousButton" #> SHtml.submit("Précédent", previous _) &
       "#saveButton"     #> SHtml.submit("Sauvegarder", saveFirstAndSecondStageData _)
     ).apply(content)
 
-    result
+    generatedXml
   }
 
 }
