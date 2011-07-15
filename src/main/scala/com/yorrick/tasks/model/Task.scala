@@ -12,15 +12,14 @@ case object TaskImportance extends Enumeration {
 
 
 class Task2 extends LongKeyedMapper[Task2] with IdPK {
-
+  
   def getSingleton = Task2
-
+  
   object label extends MappedString(this, 50)
   object detail extends MappedString(this, 300)
   object importance extends MappedEnum[Task2, TaskImportance.type](this, TaskImportance)
   
   def image : Option[Image2] = Image2.findById(this.id)
-  
 }
 
 
@@ -44,23 +43,13 @@ object Task2 extends Task2 with LongKeyedMetaMapper[Task2] {
    */
   def getTasks(importance: TaskImportance.Value) : List[Task2] =
     (Task2.findAll(By_>(Task2.importance, importance)) ::: Task2.findAll(By(Task2.importance, importance))) sortBy taskSorter reverse
-  
-//  def saveTask(newTask : Task2) = {
-//    newTask.save
-//  }
     
-//  def removeTask(id : Int) : Task2 = {
-//    val deletedTask = getTask(id)
-//    deletedTask.delete_!
-//    
-//    deletedTask
-//  }
 }
 
 class Image2 extends LongKeyedMapper[Image2] with IdPK {
-
+  
   def getSingleton = Image2
-
+  
   object data extends MappedBinary(this)
   object mimeType extends MappedString(this, 100)
   object task extends MappedLongForeignKey(this, Task2)
@@ -75,10 +64,9 @@ object Image2 extends Image2 with LongKeyedMetaMapper[Image2] {
   def findById(id : Long) : Option[Image2] = findAll(By(Image2.id, id)) match {
     case Nil => Empty
     case head :: Nil => Full(head)
-    
     case list => throw new IllegalStateException("There can not be more than one image per task")
   }
-    
+  
   /**
    * Retourne l'image identifiée par l'id
    */
@@ -92,6 +80,3 @@ object Image2 extends Image2 with LongKeyedMetaMapper[Image2] {
       case nfe: NumberFormatException => Failure("Invalid task ID")
     }  
 }
-
-
-

@@ -12,13 +12,9 @@ object TasksListSnippet extends DispatchSnippet {
 
   def dispatch : DispatchIt = {
     case "viewTask" => viewTask _
-    //case "createTask" => createTask _
   }
 
-  //private def createTask(content : NodeSeq) : NodeSeq =
-  //  ("h3" #> SHtml.link("/tasks/edition", () => (), content)).apply(content)
-
-   def viewTask(content : NodeSeq) : NodeSeq = {
+  def viewTask(content : NodeSeq) : NodeSeq = {
     val result : NodeSeq = Task2.getTasks(taskImportance.is) match {
       case Nil => <span>Pas de taches</span>
       case list => list.flatMap(task => {
@@ -32,7 +28,6 @@ object TasksListSnippet extends DispatchSnippet {
               <span>Pas d'image pour cette tâche</span>
           }
 
-          //def removeTask = Task2.removeTask(task.id)
           def removeTask = {
             task.image match {
               case Some(image) => image.delete_!

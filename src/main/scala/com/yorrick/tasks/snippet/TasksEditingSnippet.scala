@@ -16,15 +16,6 @@ class TasksEditionSnippet extends StatefulSnippet {
     case "editTask" => firstStage _
   }
 
-//  case class TaskHolder (
-//    var id : Option[Long] = None,
-//    var label : String   = "",
-//    var desc : String    = "",
-//    var importance : TaskImportance.Value = TaskImportance.Normal,
-//    var image : Option[(String, Array[Byte])] = Empty
-//  )
-  
-//var taskToSave = new TaskHolder
   val taskToSave : Task2 = currentTask.get match {
     case Full(existingTask) => existingTask
     case _ => Task2.create.label("").detail("").importance(TaskImportance.Normal)
@@ -52,11 +43,9 @@ class TasksEditionSnippet extends StatefulSnippet {
         // An empty upload gets reported with a null mime type,
         // so we need to handle this special case
         case Some(image) if (image.mimeType == null) =>
-//        case Some((null, _)) =>
           S.error("Emty upload")
           false
         case Some(image) if (!(image.mimeType.startsWith("image/"))) =>
-//        case Some((mime, data)) if (!(mime.startsWith("image/"))) =>
           S.error("Please upload an image")
           false
         case Some(_) => true
@@ -70,30 +59,13 @@ class TasksEditionSnippet extends StatefulSnippet {
   def saveData = {
     println("trying to save task " + taskToSave)
 
+    // sauvegarde de la tache et de l'image
     taskToSave.save
     imageToSave match {
       case Some(image) => image.save
       case None => // rien a faire
     }
     
-//    // sauvegarde de la tache
-//    Task2.create.label(taskToSave.label).detail(taskToSave.desc).importance(taskToSave.importance).save
-//    // sauvegarde de l'image
-//    taskToSave.image match {
-//      case Some((mime, data)) => Image2.create.data(data).mimeType(mime).save
-//      case None => // rien a faire
-//    }
-    
-//    val taskId = taskToSave.id match {
-//    case None => -1
-//    case Some(id) => id
-//    }
-//    val image = taskToSave.image match {
-//	    case Some((mime, data)) => Some(new Image2(data, mime))
-//	    case None => None
-//    }
-//    Task.saveTask(new Task(taskId, taskToSave.label, taskToSave.desc, taskToSave.importance, image))
-
     // on supprime le snippet de la session, et redirection
     unregisterThisSnippet()
     S.redirectTo("/tasks/")
@@ -108,28 +80,6 @@ class TasksEditionSnippet extends StatefulSnippet {
     println("firstStage")
 
     val content = TemplateFinder.findAnyTemplate("templates-hidden/tasks/stage1" :: Nil) openOr <span>Could not load template</span>
-
-//    // lorsque'on provient de la page de liste, la tache à sauvegarder est la tache courante (requestParam)
-//    currentTask.get match {
-//      case Full(taskFromList) =>
-//        // premier affichage du first stage, on va chercher les données de la current task
-//        taskToSave.id         = Full(taskFromList.id.is)
-//        taskToSave.label      = taskFromList.label.is
-//        taskToSave.desc       = taskFromList.detail.is
-//        taskToSave.importance = taskFromList.importance.is
-//
-//        taskFromList.image match {
-//          case Some(image) => taskToSave.image = Full(image.mimeType.is, image.data.is)
-//          case _ => // nothing to do
-//        }
-////        taskFromList.image match {
-////        case Some(Image2(data, mime)) => taskToSave.image = Full(mime, data)
-////        case _ => // nothing to do
-////        }
-//
-//      case _ =>
-//        // rien à faire
-//    }
 
     def saveFirstStageData = {
       if (controlTask){
@@ -174,18 +124,9 @@ class TasksEditionSnippet extends StatefulSnippet {
         	  case None => imageToSave = Some(Image2.create.mimeType(mime).data(data).task(taskToSave))
         	  case Some(image) => image.mimeType(mime).data(data)
         	}
-//          taskToSave.image = Some((mime, data))
         case _ => // nothing to do
       }
     }
-
-//    val imageTag = taskToSave match {
-//      case TaskHolder(Some(id), _, _, _, Some((_, _))) =>
-//        val imageSource = "/tasks/image/" + id
-//        <img id="image" alt="Image de la task"/> % Attribute(None, "src", Text(imageSource), Null)
-//      case _ =>
-//        <span>Pas d'image pour cette tâche</span>
-//    }
 
     def saveFirstAndSecondStageData = {
       if (controlTask){
