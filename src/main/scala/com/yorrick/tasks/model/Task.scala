@@ -19,12 +19,7 @@ class Task2 extends LongKeyedMapper[Task2] with IdPK {
   object detail extends MappedString(this, 300)
   object importance extends MappedEnum[Task2, TaskImportance.type](this, TaskImportance)
   
-  def image : Option[Image2] = Image2.findAll(By(Image2.task, this.id)) match {
-    case Nil => Empty
-    case head :: Nil => Full(head)
-    
-    case list => throw new IllegalStateException("There can not be more than one image per task")
-  }
+  def image : Option[Image2] = Image2.findById(this.id)
   
 }
 
@@ -41,8 +36,14 @@ object Task2 extends Task2 with LongKeyedMetaMapper[Task2] {
   
   def getTasks : List[Task2] = getTasks(TaskImportance.Low)
   
+  /** Fonction qui determine l'ordre dans lequel les taches sont renvoyees */
+  val taskSorter = (task: Task2) => (task.importance.is, task.id.is)
+  
+  /**
+   * TODO simplifier, faire le tri côté base 
+   */
   def getTasks(importance: TaskImportance.Value) : List[Task2] =
-    Task2.findAll(By_>(Task2.importance, importance), OrderBy(Task2.importance, Ascending), OrderBy(Task2.id, Ascending))
+    (Task2.findAll(By_>(Task2.importance, importance)) ::: Task2.findAll(By(Task2.importance, importance))) sortBy taskSorter reverse
   
 //  def saveTask(newTask : Task2) = {
 //    newTask.save
@@ -71,15 +72,21 @@ object Image2 extends Image2 with LongKeyedMetaMapper[Image2] {
   override def fieldOrder = List(data)
   override def dbTableName = "IMAGE"
     
+  def findById(id : Long) : Option[Image2] = findAll(By(Image2.id, id)) match {
+    case Nil => Empty
+    case head :: Nil => Full(head)
+    
+    case list => throw new IllegalStateException("There can not be more than one image per task")
+  }
+    
   /**
    * Retourne l'image identifiée par l'id
    */
   def viewImage(id: String): Box[LiftResponse] =
     try {
-      this.findAll(By(Image2.id, id.toLong)) match {
-        case Nil => Failure("No such image")
-        case image :: Nil => Full(InMemoryResponse(image.data.is, List("Content-Type" -> image.mimeType.is), Nil, 200))
-        case _ => Failure("more than one image returned")
+      findById(id.toLong) match {
+        case None => Failure("No such image")
+        case Some(image) => Full(InMemoryResponse(image.data.is, List("Content-Type" -> image.mimeType.is), Nil, 200))
       }
     } catch {
       case nfe: NumberFormatException => Failure("Invalid task ID")

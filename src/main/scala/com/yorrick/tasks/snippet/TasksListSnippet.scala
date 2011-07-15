@@ -33,7 +33,13 @@ object TasksListSnippet extends DispatchSnippet {
           }
 
           //def removeTask = Task2.removeTask(task.id)
-          def removeTask = task.delete_!
+          def removeTask = {
+            task.image match {
+              case Some(image) => image.delete_!
+              case None => // rien a faire
+            }
+            task.delete_!
+          }
 
           (
             "#label *"        #> (task.label + "(" + task.id + ", " + task.importance.toString + ")") &
