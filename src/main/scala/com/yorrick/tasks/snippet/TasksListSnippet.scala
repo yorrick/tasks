@@ -1,6 +1,6 @@
 package com.yorrick.tasks.snippet
 
-import com.yorrick.tasks.model.Task2
+import com.yorrick.tasks.model.Task
 import requestvars.{currentTask, taskImportance}
 import net.liftweb.http.{SHtml, DispatchSnippet}
 import xml.NodeSeq._
@@ -15,7 +15,7 @@ object TasksListSnippet extends DispatchSnippet {
   }
 
   def viewTask(content : NodeSeq) : NodeSeq = {
-    val result : NodeSeq = Task2.getTasks(taskImportance.is) match {
+    val result : NodeSeq = Task.getTasks(taskImportance.is) match {
       case Nil => <span>Pas de taches</span>
       case list => list.flatMap(task => {
           val redirectPath = "/tasks/edition/"

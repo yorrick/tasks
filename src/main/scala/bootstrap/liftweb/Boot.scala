@@ -33,7 +33,7 @@ class Boot {
     
     // where to search snippet
     LiftRules.addToPackages("com.yorrick.tasks")
-    Schemifier.schemify(true, Schemifier.infoF _, User, Task2, Image2)
+    Schemifier.schemify(true, Schemifier.infoF _, User, Task, Image)
     
     // url rewriting
     LiftRules.statelessRewrite.append({
@@ -50,7 +50,7 @@ class Boot {
     // Custom dispatch for image generation
     LiftRules.dispatch.append {
       case Req(List("tasks", "image", taskId), _, _) =>
-        () => Image2.viewImage(taskId)
+        () => Image.viewImage(taskId)
     }
     
     def taskMenuTitle = User.currentUser match {

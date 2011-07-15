@@ -3,7 +3,7 @@ package com.yorrick.tasks.snippet.requestvars
 import net.liftweb.http.{S, RequestVar}
 import net.liftweb.common.Box._
 import net.liftweb.common.{Empty, Full, Box}
-import com.yorrick.tasks.model.{Task2, TaskImportance}
+import com.yorrick.tasks.model.{Task, TaskImportance}
 
 object accountNumber extends RequestVar[Int](S.param("accountNumber").map(_.toInt) openOr 20)
 
@@ -14,6 +14,6 @@ object taskImportance extends RequestVar[TaskImportance.Value](S.param("taskImpo
   case _ => TaskImportance.Low
 }) openOr TaskImportance.Low)
 
-object currentTask extends RequestVar[Box[Task2]](Empty)
+object currentTask extends RequestVar[Box[Task]](Empty)
 
 

@@ -6,7 +6,7 @@ package snippet {
 import net.liftweb.util.BindHelpers._
 import requestvars.currentTask
 import net.liftweb.http._
-import model.{Image2, Task2, TaskImportance}
+import model.{Image, Task, TaskImportance}
 import xml.{NodeSeq, Attribute, Text, Null}
 import net.liftweb.common.{Empty, Full, Box}
 
@@ -16,12 +16,12 @@ class TasksEditionSnippet extends StatefulSnippet {
     case "editTask" => firstStage _
   }
 
-  val taskToSave : Task2 = currentTask.get match {
+  val taskToSave : Task = currentTask.get match {
     case Full(existingTask) => existingTask
-    case _ => Task2.create.label("").detail("").importance(TaskImportance.Normal)
+    case _ => Task.create.label("").detail("").importance(TaskImportance.Normal)
   }
   
-  var imageToSave : Option[Image2] = currentTask.get match {
+  var imageToSave : Option[Image] = currentTask.get match {
     case Full(existingTask) => existingTask.image
     case _ => None
   }
@@ -121,7 +121,7 @@ class TasksEditionSnippet extends StatefulSnippet {
       holder match {
         case FileParamHolder(name, mime, fileName, data) =>
         	imageToSave match {
-        	  case None => imageToSave = Some(Image2.create.mimeType(mime).data(data).task(taskToSave))
+        	  case None => imageToSave = Some(Image.create.mimeType(mime).data(data).task(taskToSave))
         	  case Some(image) => image.mimeType(mime).data(data)
         	}
         case _ => // nothing to do
